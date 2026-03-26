@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    .result { margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Loan Calculator</h2><label>Loan Amount</label>
+<input type="number" id="amount" placeholder="Enter amount">
+
+<label>Years</label>
+<input type="number" id="years" placeholder="Number of years">
+
+<label>Annual Interest Rates (%) - comma separated</label>
+<input type="text" id="rates" placeholder="e.g. 10,12,11">
+
+<label>Monthly Assurance</label>
+<input type="number" id="assurance" placeholder="Insurance per month">
+
+<label>Processing Fees</label>
+<input type="number" id="fees" placeholder="One-time fees">
+
+<button onclick="calculateLoan()">Calculate</button>
+
+<div class="result" id="result"></div>
+
+  </div><script>
+function calculateLoan() {
+  let amount = parseFloat(document.getElementById('amount').value);
+  let years = parseInt(document.getElementById('years').value);
+  let rates = document.getElementById('rates').value.split(',').map(r => parseFloat(r.trim()) / 100);
+  let assurance = parseFloat(document.getElementById('assurance').value) || 0;
+  let fees = parseFloat(document.getElementById('fees').value) || 0;
+
+  if (!amount || !years || rates.length === 0) {
+    document.getElementById('result').innerHTML = "Please fill all fields correctly.";
+    return;
+  }
+
+  let balance = amount + fees;
+  let totalMonths = years * 12;
+  let schedule = [];
+
+  let currentMonth = 0;
+
+  for (let y = 0; y < years; y++) {
+    let rate = rates[y] || rates[rates.length - 1];
+    let monthlyRate = rate / 12;
+
+    for (let m = 0; m < 12; m++) {
+      currentMonth++;
+
+      let interest = balance * monthlyRate;
+      let principalPayment = (amount / totalMonths);
+      let monthlyPayment = interest + principalPayment + assurance;
+
+      balance -= principalPayment;
+
+      schedule.push({
+        month: currentMonth,
+        payment: monthlyPayment.toFixed(2),
+        balance: balance.toFixed(2)
+      });
+
+      if (balance <= 0) break;
+    }
+  }
+
+  let totalPaid = schedule.reduce((sum, m) => sum + parseFloat(m.payment), 0);
+
+  document.getElementById('result').innerHTML = `
+    <p><strong>Total Paid:</strong> ${totalPaid.toFixed(2)}</p>
+    <p><strong>Monthly Payment (approx):</strong> ${schedule[0].payment}</p>
+    <p><strong>Remaining Balance:</strong> ${schedule[schedule.length - 1].balance}</p>
+  `;
+}
+</script></body>
+</html>
